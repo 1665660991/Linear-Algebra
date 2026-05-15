@@ -1,0 +1,2195 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>线性代数学习软件</title>
+    
+    <!-- KaTeX for math rendering -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    
+    <!-- Plotly.js for 2D visualization -->
+    <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+    
+    <!-- math.js for matrix operations -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.8.0/math.js"></script>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: #f5f5f5;
+            color: #333;
+            line-height: 1.6;
+        }
+        
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%);
+            color: white;
+            padding: 20px 30px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .header h1 {
+            font-size: 24px;
+            font-weight: 600;
+        }
+        
+        .header p {
+            font-size: 14px;
+            opacity: 0.9;
+            margin-top: 5px;
+        }
+        
+        /* Main Layout */
+        .container {
+            display: flex;
+            min-height: calc(100vh - 80px);
+        }
+        
+        /* Sidebar */
+        .sidebar {
+            width: 220px;
+            background: white;
+            box-shadow: 2px 0 4px rgba(0,0,0,0.05);
+            padding: 20px 0;
+        }
+        
+        .nav-item {
+            padding: 12px 20px;
+            cursor: pointer;
+            transition: all 0.2s;
+            border-left: 3px solid transparent;
+        }
+        
+        .nav-item:hover {
+            background: #f0f0f0;
+        }
+        
+        .nav-item.active {
+            background: #e3f2fd;
+            border-left-color: #2196F3;
+            color: #2196F3;
+            font-weight: 500;
+        }
+        
+        .nav-item i {
+            margin-right: 10px;
+        }
+        
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            padding: 30px;
+            overflow-y: auto;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        /* Cards */
+        .card {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        
+        .card-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #2196F3;
+        }
+        
+        /* Matrix Input Grid */
+        .matrix-grid {
+            display: inline-grid;
+            gap: 5px;
+            margin: 10px 0;
+        }
+        
+        .matrix-grid input {
+            width: 60px;
+            height: 40px;
+            text-align: center;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        
+        .matrix-grid input:focus {
+            outline: none;
+            border-color: #2196F3;
+            box-shadow: 0 0 0 2px rgba(33, 150, 243, 0.1);
+        }
+        
+        /* Buttons */
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s;
+            margin: 5px;
+        }
+        
+        .btn-primary {
+            background: #2196F3;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #1976D2;
+        }
+        
+        .btn-secondary {
+            background: #757575;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background: #616161;
+        }
+        
+        .btn-success {
+            background: #4CAF50;
+            color: white;
+        }
+        
+        .btn-success:hover {
+            background: #45a049;
+        }
+        
+        .btn-warning {
+            background: #FF9800;
+            color: white;
+        }
+        
+        .btn-warning:hover {
+            background: #f57c00;
+        }
+        
+        /* Form Controls */
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        
+        .form-control:focus {
+            outline: none;
+            border-color: #2196F3;
+        }
+        
+        select.form-control {
+            cursor: pointer;
+        }
+        
+        /* Results */
+        .result-box {
+            background: #f9f9f9;
+            border: 1px solid #e0e0e0;
+            border-radius: 4px;
+            padding: 15px;
+            margin-top: 15px;
+            min-height: 50px;
+        }
+        
+        .result-box.error {
+            background: #ffebee;
+            border-color: #f44336;
+            color: #c62828;
+        }
+        
+        .result-box.success {
+            background: #e8f5e9;
+            border-color: #4CAF50;
+            color: #2e7d32;
+        }
+        
+        /* Steps Display */
+        .step-container {
+            margin-top: 15px;
+        }
+        
+        .step {
+            background: #fff;
+            border-left: 3px solid #2196F3;
+            padding: 10px 15px;
+            margin-bottom: 10px;
+            border-radius: 0 4px 4px 0;
+        }
+        
+        .step-number {
+            font-weight: 600;
+            color: #2196F3;
+            margin-bottom: 5px;
+        }
+        
+        .step-content {
+            font-size: 14px;
+        }
+        
+        /* Visualization Container */
+        .viz-container {
+            width: 100%;
+            height: 400px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin-top: 15px;
+        }
+        
+        /* Example Cards */
+        .example-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        
+        .example-card {
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 15px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .example-card:hover {
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            transform: translateY(-2px);
+        }
+        
+        .example-card h4 {
+            color: #2196F3;
+            margin-bottom: 8px;
+        }
+        
+        .example-card p {
+            font-size: 13px;
+            color: #666;
+        }
+        
+        .example-tags {
+            margin-top: 10px;
+        }
+        
+        .tag {
+            display: inline-block;
+            padding: 2px 8px;
+            background: #e3f2fd;
+            color: #2196F3;
+            border-radius: 12px;
+            font-size: 11px;
+            margin-right: 5px;
+        }
+        
+        /* Slider */
+        .slider-container {
+            margin: 15px 0;
+        }
+        
+        .slider-container label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        
+        input[type="range"] {
+            width: 100%;
+            height: 6px;
+            border-radius: 3px;
+            background: #ddd;
+            outline: none;
+        }
+        
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: #2196F3;
+            cursor: pointer;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+            }
+            
+            .sidebar {
+                width: 100%;
+                display: flex;
+                overflow-x: auto;
+                padding: 10px;
+            }
+            
+            .nav-item {
+                white-space: nowrap;
+                border-left: none;
+                border-bottom: 3px solid transparent;
+            }
+            
+            .nav-item.active {
+                border-left-color: transparent;
+                border-bottom-color: #2196F3;
+            }
+            
+            .main-content {
+                padding: 15px;
+            }
+        }
+        
+        /* Utility Classes */
+        .text-center {
+            text-align: center;
+        }
+        
+        .mt-10 {
+            margin-top: 10px;
+        }
+        
+        .mt-20 {
+            margin-top: 20px;
+        }
+        
+        .mb-10 {
+            margin-bottom: 10px;
+        }
+        
+        .flex {
+            display: flex;
+        }
+        
+        .flex-wrap {
+            flex-wrap: wrap;
+        }
+        
+        .gap-10 {
+            gap: 10px;
+        }
+        
+        .align-center {
+            align-items: center;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <div class="header">
+        <h1>📐 线性代数学习软件</h1>
+        <p>面向大学生的学习工具 | 矩阵运算 · 行列式 · 方程组 · 可视化</p>
+    </div>
+    
+    <!-- Main Container -->
+    <div class="container">
+        <!-- Sidebar Navigation -->
+        <div class="sidebar">
+            <div class="nav-item active" data-tab="matrix-calc">
+                <span>🔢</span> 矩阵计算器
+            </div>
+            <div class="nav-item" data-tab="determinant">
+                <span>📊</span> 行列式专题
+            </div>
+            <div class="nav-item" data-tab="linear-system">
+                <span>✏️</span> 方程组求解
+            </div>
+            <div class="nav-item" data-tab="vector-viz">
+                <span>📈</span> 向量可视化
+            </div>
+            <div class="nav-item" data-tab="eigenvalue">
+                <span>🎯</span> 特征值探索
+            </div>
+            <div class="nav-item" data-tab="decomposition">
+                <span>🔬</span> 矩阵分解
+            </div>
+            <div class="nav-item" data-tab="examples">
+                <span>📚</span> 示例库
+            </div>
+            <div class="nav-item" data-tab="practice">
+                <span>✍️</span> 练习题
+            </div>
+            <div class="nav-item" data-tab="export">
+                <span>📄</span> LaTeX导出
+            </div>
+        </div>
+        
+        <!-- Main Content Area -->
+        <div class="main-content">
+            <!-- Tab 1: Matrix Calculator -->
+            <div id="matrix-calc" class="tab-content active">
+                <div class="card">
+                    <div class="card-title">矩阵计算器</div>
+                    
+                    <div class="form-group">
+                        <label>矩阵 A 维度:</label>
+                        <div class="flex gap-10 align-center">
+                            <input type="number" id="matrix-a-rows" class="form-control" placeholder="行" value="3" min="1" max="10" style="width: 80px;">
+                            <span>×</span>
+                            <input type="number" id="matrix-a-cols" class="form-control" placeholder="列" value="3" min="1" max="10" style="width: 80px;">
+                            <button class="btn btn-secondary" onclick="updateMatrixA()">更新矩阵</button>
+                        </div>
+                    </div>
+                    
+                    <div id="matrix-a-container">
+                        <!-- Matrix A input will be rendered here -->
+                    </div>
+                    
+                    <div class="form-group mt-20">
+                        <label>选择运算:</label>
+                        <select id="matrix-operation" class="form-control">
+                            <option value="det">行列式 det(A)</option>
+                            <option value="inv">逆矩阵 A⁻¹</option>
+                            <option value="transpose">转置 Aᵀ</option>
+                            <option value="rank">秩 rank(A)</option>
+                            <option value="eigen">特征值与特征向量</option>
+                            <option value="add">矩阵加法 A+B</option>
+                            <option value="subtract">矩阵减法 A-B</option>
+                            <option value="multiply">矩阵乘法 A×B</option>
+                            <option value="power">矩阵幂 A^n</option>
+                        </select>
+                    </div>
+                    
+                    <div id="matrix-b-section" style="display: none;">
+                        <div class="form-group">
+                            <label>矩阵 B 维度:</label>
+                            <div class="flex gap-10 align-center">
+                                <input type="number" id="matrix-b-rows" class="form-control" placeholder="行" value="3" min="1" max="10" style="width: 80px;">
+                                <span>×</span>
+                                <input type="number" id="matrix-b-cols" class="form-control" placeholder="列" value="3" min="1" max="10" style="width: 80px;">
+                                <button class="btn btn-secondary" onclick="updateMatrixB()">更新矩阵</button>
+                            </div>
+                        </div>
+                        <div id="matrix-b-container">
+                            <!-- Matrix B input will be rendered here -->
+                        </div>
+                    </div>
+                    
+                    <div class="mt-20">
+                        <button class="btn btn-primary" onclick="calculateMatrix()">计算</button>
+                        <button class="btn btn-success" onclick="toggleStepMode()" id="step-mode-btn">切换逐步模式</button>
+                    </div>
+                    
+                    <div id="matrix-result" class="result-box" style="display: none;">
+                        <!-- Results will be displayed here -->
+                    </div>
+                    
+                    <div id="matrix-steps" class="step-container" style="display: none;">
+                        <!-- Step-by-step explanation -->
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Tab 2: Determinant Explorer -->
+            <div id="determinant" class="tab-content">
+                <div class="card">
+                    <div class="card-title">行列式计算器</div>
+                    
+                    <div class="form-group">
+                        <label>矩阵维度 (方阵):</label>
+                        <div class="flex gap-10 align-center">
+                            <input type="number" id="det-matrix-size" class="form-control" placeholder="维度" value="3" min="1" max="10" style="width: 100px;">
+                            <span>×</span>
+                            <input type="number" disabled class="form-control" value="同左" style="width: 100px; background: #f5f5f5;">
+                            <button class="btn btn-secondary" onclick="updateDetMatrix()">更新</button>
+                        </div>
+                    </div>
+                    
+                    <div id="det-matrix-container">
+                        <!-- Determinant matrix input -->
+                    </div>
+                    
+                    <div class="mt-20">
+                        <button class="btn btn-primary" onclick="calculateDeterminant()">计算行列式</button>
+                        <button class="btn btn-success" onclick="showDetSteps()">显示计算步骤</button>
+                    </div>
+                    
+                    <div id="det-result" class="result-box" style="display: none;"></div>
+                    <div id="det-steps" class="step-container" style="display: none;"></div>
+                </div>
+                
+                <div class="card">
+                    <div class="card-title">行列式性质演示</div>
+                    <p style="margin-bottom: 15px;">交互式演示行列式的基本性质：</p>
+                    
+                    <div class="form-group">
+                        <button class="btn btn-primary" onclick="demoDetProperty('swap')">交换两行（变号）</button>
+                        <button class="btn btn-primary" onclick="demoDetProperty('multiply')">某行乘k（行列式乘k）</button>
+                        <button class="btn btn-primary" onclick="demoDetProperty('add')">倍加变换（不变）</button>
+                    </div>
+                    
+                    <div id="det-property-demo" class="result-box"></div>
+                </div>
+            </div>
+            
+            <!-- Tab 3: Linear System Solver -->
+            <div id="linear-system" class="tab-content">
+                <div class="card">
+                    <div class="card-title">线性方程组求解器</div>
+                    
+                    <div class="form-group">
+                        <label>方程个数:</label>
+                        <select id="system-size" class="form-control" style="width: 100px;">
+                            <option value="2">2元</option>
+                            <option value="3" selected>3元</option>
+                            <option value="4">4元</option>
+                        </select>
+                        <button class="btn btn-secondary" onclick="updateSystem()">更新</button>
+                    </div>
+                    
+                    <div id="system-container">
+                        <!-- Augmented matrix input -->
+                    </div>
+                    
+                    <div class="mt-20">
+                        <button class="btn btn-primary" onclick="solveSystem('gauss')">高斯消元法</button>
+                        <button class="btn btn-primary" onclick="solveSystem('cramer')">克拉默法则</button>
+                    </div>
+                    
+                    <div id="system-result" class="result-box" style="display: none;"></div>
+                    <div id="system-steps" class="step-container" style="display: none;"></div>
+                </div>
+                
+                <div class="card">
+                    <div class="card-title">几何可视化</div>
+                    <div id="system-viz" class="viz-container"></div>
+                </div>
+            </div>
+            
+            <!-- Tab 4: Vector Visualizer -->
+            <div id="vector-viz" class="tab-content">
+                <div class="card">
+                    <div class="card-title">向量空间可视化</div>
+                    
+                    <div class="form-group">
+                        <label>向量 v₁:</label>
+                        <div class="flex gap-10">
+                            <input type="number" id="v1-x" class="form-control" placeholder="x" value="2" style="width: 100px;">
+                            <input type="number" id="v1-y" class="form-control" placeholder="y" value="1" style="width: 100px;">
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>向量 v₂:</label>
+                        <div class="flex gap-10">
+                            <input type="number" id="v2-x" class="form-control" placeholder="x" value="1" style="width: 100px;">
+                            <input type="number" id="v2-y" class="form-control" placeholder="y" value="3" style="width: 100px;">
+                        </div>
+                    </div>
+                    
+                    <div class="slider-container">
+                        <label>系数 a: <span id="coeff-a-value">1</span></label>
+                        <input type="range" id="coeff-a" min="-3" max="3" step="0.1" value="1">
+                    </div>
+                    
+                    <div class="slider-container">
+                        <label>系数 b: <span id="coeff-b-value">1</span></label>
+                        <input type="range" id="coeff-b" min="-3" max="3" step="0.1" value="1">
+                    </div>
+                    
+                    <div class="mt-20">
+                        <button class="btn btn-primary" onclick="plotVectors()">绘制向量</button>
+                        <button class="btn btn-success" onclick="showLinearCombo()">显示线性组合</button>
+                    </div>
+                    
+                    <div id="vector-plot" class="viz-container"></div>
+                </div>
+            </div>
+            
+            <!-- Tab 5: Eigenvalue Explorer -->
+            <div id="eigenvalue" class="tab-content">
+                <div class="card">
+                    <div class="card-title">特征值与特征向量</div>
+                    
+                    <div class="form-group">
+                        <label>n×n 矩阵 A:</label>
+                        <div class="flex gap-10 align-center mb-10">
+                            <input type="number" id="eigen-matrix-size" class="form-control" placeholder="维度" value="2" min="2" max="5" style="width: 80px;">
+                            <button class="btn btn-secondary" onclick="updateEigenMatrix()">更新矩阵</button>
+                        </div>
+                        <div id="eigen-matrix-container">
+                            <!-- n x n matrix input -->
+                        </div>
+                    </div>
+                    
+                    <div class="mt-20">
+                        <button class="btn btn-primary" onclick="calculateEigenvalues()">计算特征值</button>
+                    </div>
+                    
+                    <div id="eigen-result" class="result-box" style="display: none;"></div>
+                </div>
+            </div>
+            
+            <!-- Tab 6: Decomposition Lab -->
+            <div id="decomposition" class="tab-content">
+                <div class="card">
+                    <div class="card-title">矩阵分解实验室</div>
+                    
+                    <div class="form-group">
+                        <label>选择分解方法:</label>
+                        <select id="decomp-method" class="form-control">
+                            <option value="lu">LU 分解</option>
+                            <option value="qr">QR 分解</option>
+                            <option value="cholesky">Cholesky 分解</option>
+                            <option value="svd">SVD 分解</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>矩阵维度:</label>
+                        <select id="decomp-size" class="form-control" style="width: 100px;">
+                            <option value="3" selected>3×3</option>
+                            <option value="4">4×4</option>
+                        </select>
+                        <button class="btn btn-secondary" onclick="updateDecompMatrix()">更新</button>
+                    </div>
+                    
+                    <div id="decomp-matrix-container">
+                        <!-- Matrix input for decomposition -->
+                    </div>
+                    
+                    <div class="mt-20">
+                        <button class="btn btn-primary" onclick="performDecomposition()">执行分解</button>
+                    </div>
+                    
+                    <div id="decomp-result" class="result-box" style="display: none;"></div>
+                    <div id="decomp-steps" class="step-container" style="display: none;"></div>
+                </div>
+            </div>
+            
+            <!-- Tab 7: Example Library -->
+            <div id="examples" class="tab-content">
+                <div class="card">
+                    <div class="card-title">经典矩阵类型</div>
+                    <div class="example-grid" id="matrix-examples">
+                        <!-- Example cards will be loaded here -->
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <div class="card-title">特殊行列式</div>
+                    <div class="example-grid" id="determinant-examples">
+                        <!-- Example cards will be loaded here -->
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <div class="card-title">典型例题</div>
+                    <div class="example-grid" id="problem-examples">
+                        <!-- Example cards will be loaded here -->
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Tab 8: Practice Problems -->
+            <div id="practice" class="tab-content">
+                <div class="card">
+                    <div class="card-title">练习题系统</div>
+                    
+                    <div class="form-group">
+                        <label>选择题目类型:</label>
+                        <select id="practice-type" class="form-control">
+                            <option value="det">行列式计算</option>
+                            <option value="matrix-op">矩阵运算（加减乘）</option>
+                            <option value="inverse">求逆矩阵</option>
+                            <option value="system">线性方程组求解</option>
+                            <option value="eigen">特征值与特征向量</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>难度等级:</label>
+                        <select id="practice-difficulty" class="form-control">
+                            <option value="easy">简单 (2×2)</option>
+                            <option value="medium" selected>中等 (3×3)</option>
+                            <option value="hard">困难 (4×4)</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mt-20">
+                        <button class="btn btn-primary" onclick="generatePractice()">生成题目</button>
+                        <button class="btn btn-success" onclick="checkAnswer()">检查答案</button>
+                        <button class="btn btn-secondary" onclick="showPracticeSolution()">查看答案</button>
+                    </div>
+                    
+                    <div id="practice-problem" class="result-box" style="margin-top: 20px; display: none;">
+                        <!-- Problem will be displayed here -->
+                    </div>
+                    
+                    <div id="practice-answer-section" style="margin-top: 20px; display: none;">
+                        <label>你的答案:</label>
+                        <textarea id="practice-answer" class="form-control" rows="4" placeholder="输入你的答案..."></textarea>
+                    </div>
+                    
+                    <div id="practice-result" class="result-box" style="display: none;"></div>
+                    <div id="practice-solution" class="step-container" style="display: none;"></div>
+                </div>
+                
+                <div class="card">
+                    <div class="card-title">学习进度</div>
+                    <div id="practice-stats">
+                        <p>已完成题目: <span id="completed-count">0</span></p>
+                        <p>正确率: <span id="accuracy-rate">0%</span></p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Tab 9: LaTeX Export -->
+            <div id="export" class="tab-content">
+                <div class="card">
+                    <div class="card-title">LaTeX 导出</div>
+                    <p style="margin-bottom: 15px;">将计算过程和结果导出为 LaTeX 文档</p>
+                    
+                    <div class="form-group">
+                        <label>选择要导出的内容:</label>
+                        <div style="margin-top: 10px;">
+                            <label><input type="checkbox" id="export-matrix" checked> 矩阵计算器结果</label><br>
+                            <label><input type="checkbox" id="export-det" checked> 行列式计算</label><br>
+                            <label><input type="checkbox" id="export-system" checked> 方程组求解</label><br>
+                            <label><input type="checkbox" id="export-eigen" checked> 特征值计算</label><br>
+                            <label><input type="checkbox" id="export-decomp" checked> 矩阵分解</label>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-20">
+                        <button class="btn btn-primary" onclick="generateLatex()">生成 LaTeX</button>
+                        <button class="btn btn-success" onclick="downloadLatex()">下载 .tex 文件</button>
+                        <button class="btn btn-secondary" onclick="copyLatex()">复制到剪贴板</button>
+                    </div>
+                    
+                    <div id="latex-output" class="result-box" style="margin-top: 20px; display: none;">
+                        <pre id="latex-code" style="white-space: pre-wrap; font-family: monospace;"></pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // ==========================================
+        // Global State Management
+        // ==========================================
+        const AppState = {
+            currentTab: 'matrix-calc',
+            stepMode: false,
+            matrices: {
+                A: [],
+                B: []
+            },
+            results: {}
+        };
+        
+        // ==========================================
+        // Navigation & Tab Switching
+        // ==========================================
+        document.querySelectorAll('.nav-item').forEach(item => {
+            item.addEventListener('click', function() {
+                // Remove active class from all items
+                document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+                
+                // Add active class to clicked item
+                this.classList.add('active');
+                const tabId = this.dataset.tab;
+                document.getElementById(tabId).classList.add('active');
+                AppState.currentTab = tabId;
+                
+                // Initialize tab-specific content
+                initializeTab(tabId);
+            });
+        });
+        
+        function initializeTab(tabId) {
+            switch(tabId) {
+                case 'matrix-calc':
+                    if (AppState.matrices.A.length === 0) {
+                        updateMatrixA();
+                    }
+                    break;
+                case 'determinant':
+                    if (!document.querySelector('#det-matrix-container input')) {
+                        updateDetMatrix();
+                    }
+                    break;
+                case 'linear-system':
+                    if (!document.querySelector('#system-container input')) {
+                        updateSystem();
+                    }
+                    break;
+                case 'eigenvalue':
+                    if (!document.querySelector('#eigen-matrix-container input')) {
+                        initEigenMatrix();
+                    }
+                    break;
+                case 'decomposition':
+                    if (!document.querySelector('#decomp-matrix-container input')) {
+                        updateDecompMatrix();
+                    }
+                    break;
+                case 'examples':
+                    loadExamples();
+                    break;
+                case 'practice':
+                    // Practice tab doesn't need initialization
+                    break;
+                case 'export':
+                    // Export tab doesn't need initialization
+                    break;
+            }
+        }
+        
+        // ==========================================
+        // Matrix Input Component
+        // ==========================================
+        class MatrixInput {
+            constructor(containerId, rows = 3, cols = 3, defaultValues = null) {
+                this.container = document.getElementById(containerId);
+                this.rows = rows;
+                this.cols = cols;
+                this.data = defaultValues || Array(rows).fill().map(() => Array(cols).fill(0));
+                this.render();
+            }
+            
+            render() {
+                this.container.innerHTML = '';
+                const grid = document.createElement('div');
+                grid.className = 'matrix-grid';
+                grid.style.gridTemplateColumns = `repeat(${this.cols}, 1fr)`;
+                
+                for (let i = 0; i < this.rows; i++) {
+                    for (let j = 0; j < this.cols; j++) {
+                        const input = document.createElement('input');
+                        input.type = 'number';
+                        input.step = 'any';
+                        input.value = this.data[i][j];
+                        input.dataset.row = i;
+                        input.dataset.col = j;
+                        input.addEventListener('change', (e) => {
+                            this.data[i][j] = parseFloat(e.target.value) || 0;
+                        });
+                        grid.appendChild(input);
+                    }
+                }
+                
+                this.container.appendChild(grid);
+            }
+            
+            getData() {
+                return this.data.map(row => [...row]);
+            }
+            
+            setData(newData) {
+                this.rows = newData.length;
+                this.cols = newData[0].length;
+                this.data = newData.map(row => [...row]);
+                this.render();
+            }
+        }
+        
+        let matrixAInput, matrixBInput, detMatrixInput, systemMatrixInput, eigenMatrixInput, decompMatrixInput;
+        
+        // ==========================================
+        // Matrix Calculator Functions
+        // ==========================================
+        function updateMatrixA() {
+            const rows = parseInt(document.getElementById('matrix-a-rows').value);
+            const cols = parseInt(document.getElementById('matrix-a-cols').value);
+            matrixAInput = new MatrixInput('matrix-a-container', rows, cols);
+            AppState.matrices.A = matrixAInput.getData();
+        }
+        
+        function updateMatrixB() {
+            const rows = parseInt(document.getElementById('matrix-b-rows').value);
+            const cols = parseInt(document.getElementById('matrix-b-cols').value);
+            matrixBInput = new MatrixInput('matrix-b-container', rows, cols);
+            AppState.matrices.B = matrixBInput.getData();
+        }
+        
+        // Show/hide matrix B based on operation
+        document.getElementById('matrix-operation').addEventListener('change', function() {
+            const showB = ['multiply', 'add', 'subtract'].includes(this.value);
+            document.getElementById('matrix-b-section').style.display = showB ? 'block' : 'none';
+            if (showB && !matrixBInput) {
+                updateMatrixB();
+            }
+        });
+        
+        function calculateMatrix() {
+            const operation = document.getElementById('matrix-operation').value;
+            const resultBox = document.getElementById('matrix-result');
+            const stepsBox = document.getElementById('matrix-steps');
+            
+            try {
+                const A = math.matrix(matrixAInput.getData());
+                let result, latex;
+                
+                switch(operation) {
+                    case 'det':
+                        if (A.size()[0] !== A.size()[1]) {
+                            throw new Error('行列式只适用于方阵');
+                        }
+                        const detValue = math.det(A);
+                        result = `行列式 det(A) = ${formatNumber(detValue)}`;
+                        latex = `\\det(A) = ${formatNumber(detValue)}`;
+                        break;
+                        
+                    case 'inv':
+                        if (A.size()[0] !== A.size()[1]) {
+                            throw new Error('只有方阵才能求逆');
+                        }
+                        const invA = math.inv(A);
+                        result = '逆矩阵 A⁻¹:<br>' + formatMatrix(invA.toArray());
+                        latex = 'A^{-1} = ' + matrixToLatex(invA.toArray());
+                        break;
+                        
+                    case 'transpose':
+                        const AT = math.transpose(A);
+                        result = '转置矩阵 Aᵀ:<br>' + formatMatrix(AT.toArray());
+                        latex = 'A^T = ' + matrixToLatex(AT.toArray());
+                        break;
+                        
+                    case 'rank':
+                        const rank = math.rank(A);
+                        result = `矩阵的秩 rank(A) = ${rank}`;
+                        latex = `\\text{rank}(A) = ${rank}`;
+                        break;
+                        
+                    case 'eigen':
+                        if (A.size()[0] !== A.size()[1]) {
+                            throw new Error('特征值只适用于方阵');
+                        }
+                        const eigen = math.eig(A);
+                        result = '特征值:<br>' + eigen.values.toArray().map((v, i) => 
+                            `λ${i+1} = ${formatNumber(v)}`
+                        ).join('<br>');
+                        result += '<br><br>特征向量:<br>';
+                        latex = '\\text{特征值: }';
+                        eigen.values.toArray().forEach((v, i) => {
+                            result += `v${i+1} = [${eigen.vectors.column(i).toArray().map(formatNumber).join(', ')}]<br>`;
+                        });
+                        break;
+                        
+                    case 'multiply':
+                        if (!matrixBInput) {
+                            throw new Error('请先输入矩阵 B');
+                        }
+                        const B_mul = math.matrix(matrixBInput.getData());
+                        if (A.size()[1] !== B_mul.size()[0]) {
+                            throw new Error(`矩阵维度不匹配: A是${A.size()[0]}×${A.size()[1]}, B是${B_mul.size()[0]}×${B_mul.size()[1]}`);
+                        }
+                        const C = math.multiply(A, B_mul);
+                        result = 'A × B =<br>' + formatMatrix(C.toArray());
+                        latex = 'AB = ' + matrixToLatex(C.toArray());
+                        break;
+                        
+                    case 'add':
+                        if (!matrixBInput) {
+                            throw new Error('请先输入矩阵 B');
+                        }
+                        const B_add = math.matrix(matrixBInput.getData());
+                        if (A.size()[0] !== B_add.size()[0] || A.size()[1] !== B_add.size()[1]) {
+                            throw new Error(`矩阵维度不匹配: A是${A.size()[0]}×${A.size()[1]}, B是${B_add.size()[0]}×${B_add.size()[1]}`);
+                        }
+                        const D = math.add(A, B_add);
+                        result = 'A + B =<br>' + formatMatrix(D.toArray());
+                        latex = 'A + B = ' + matrixToLatex(D.toArray());
+                        break;
+                        
+                    case 'subtract':
+                        if (!matrixBInput) {
+                            throw new Error('请先输入矩阵 B');
+                        }
+                        const B_sub = math.matrix(matrixBInput.getData());
+                        if (A.size()[0] !== B_sub.size()[0] || A.size()[1] !== B_sub.size()[1]) {
+                            throw new Error(`矩阵维度不匹配: A是${A.size()[0]}×${A.size()[1]}, B是${B_sub.size()[0]}×${B_sub.size()[1]}`);
+                        }
+                        const E = math.subtract(A, B_sub);
+                        result = 'A - B =<br>' + formatMatrix(E.toArray());
+                        latex = 'A - B = ' + matrixToLatex(E.toArray());
+                        break;
+                        
+                    case 'power':
+                        if (A.size()[0] !== A.size()[1]) {
+                            throw new Error('只有方阵才能进行幂运算');
+                        }
+                        const power = prompt('请输入幂次 n:', '2');
+                        if (!power) return;
+                        const n = parseInt(power);
+                        if (isNaN(n)) {
+                            throw new Error('无效的幂次');
+                        }
+                        let F = A;
+                        for (let i = 1; i < n; i++) {
+                            F = math.multiply(F, A);
+                        }
+                        result = `A^${n} =<br>` + formatMatrix(F.toArray());
+                        latex = `A^{${n}} = ` + matrixToLatex(F.toArray());
+                        break;
+                }
+                
+                resultBox.innerHTML = result;
+                resultBox.className = 'result-box success';
+                resultBox.style.display = 'block';
+                
+                // Render LaTeX formula
+                if (latex && typeof katex !== 'undefined') {
+                    setTimeout(() => {
+                        const formulaDiv = document.createElement('div');
+                        formulaDiv.style.marginTop = '10px';
+                        resultBox.appendChild(formulaDiv);
+                        katex.render(latex, formulaDiv, { throwOnError: false });
+                    }, 100);
+                }
+                
+                // Show steps if in step mode
+                if (AppState.stepMode) {
+                    showMatrixSteps(operation, A);
+                }
+                
+            } catch (error) {
+                resultBox.innerHTML = `错误: ${error.message}`;
+                resultBox.className = 'result-box error';
+                resultBox.style.display = 'block';
+            }
+        }
+        
+        function showMatrixSteps(operation, A) {
+            const stepsBox = document.getElementById('matrix-steps');
+            stepsBox.innerHTML = '';
+            stepsBox.style.display = 'block';
+            
+            let steps = [];
+            
+            switch(operation) {
+                case 'det':
+                    steps = generateDetSteps(A.toArray());
+                    break;
+                case 'inv':
+                    steps = generateInvSteps(A.toArray());
+                    break;
+            }
+            
+            steps.forEach((step, idx) => {
+                const stepDiv = document.createElement('div');
+                stepDiv.className = 'step';
+                stepDiv.innerHTML = `
+                    <div class="step-number">步骤 ${idx + 1}</div>
+                    <div class="step-content">${step}</div>
+                `;
+                stepsBox.appendChild(stepDiv);
+            });
+        }
+        
+        function toggleStepMode() {
+            AppState.stepMode = !AppState.stepMode;
+            const btn = document.getElementById('step-mode-btn');
+            btn.textContent = AppState.stepMode ? '关闭逐步模式' : '切换逐步模式';
+            btn.className = AppState.stepMode ? 'btn btn-warning' : 'btn btn-success';
+        }
+        
+        // ==========================================
+        // Determinant Functions
+        // ==========================================
+        function updateDetMatrix() {
+            const size = parseInt(document.getElementById('det-matrix-size').value);
+            detMatrixInput = new MatrixInput('det-matrix-container', size, size);
+        }
+        
+        function calculateDeterminant() {
+            const resultBox = document.getElementById('det-result');
+            
+            try {
+                const matrix = detMatrixInput.getData();
+                const detValue = math.det(math.matrix(matrix));
+                
+                resultBox.innerHTML = `行列式的值: ${formatNumber(detValue)}`;
+                resultBox.className = 'result-box success';
+                resultBox.style.display = 'block';
+                
+                if (typeof katex !== 'undefined') {
+                    setTimeout(() => {
+                        const formulaDiv = document.createElement('div');
+                        formulaDiv.style.marginTop = '10px';
+                        resultBox.appendChild(formulaDiv);
+                        katex.render(`\\det(A) = ${formatNumber(detValue)}`, formulaDiv, { throwOnError: false });
+                    }, 100);
+                }
+                
+            } catch (error) {
+                resultBox.innerHTML = `错误: ${error.message}`;
+                resultBox.className = 'result-box error';
+                resultBox.style.display = 'block';
+            }
+        }
+        
+        function showDetSteps() {
+            const stepsBox = document.getElementById('det-steps');
+            stepsBox.innerHTML = '';
+            stepsBox.style.display = 'block';
+            
+            const matrix = detMatrixInput.getData();
+            const steps = generateDetSteps(matrix);
+            
+            steps.forEach((step, idx) => {
+                const stepDiv = document.createElement('div');
+                stepDiv.className = 'step';
+                stepDiv.innerHTML = `
+                    <div class="step-number">步骤 ${idx + 1}</div>
+                    <div class="step-content">${step}</div>
+                `;
+                stepsBox.appendChild(stepDiv);
+            });
+        }
+        
+        function generateDetSteps(matrix) {
+            const steps = [];
+            const n = matrix.length;
+            
+            if (n === 2) {
+                steps.push(`2×2 行列式公式: det = a₁₁×a₂₂ - a₁₂×a₂₁`);
+                steps.push(`det = ${matrix[0][0]}×${matrix[1][1]} - ${matrix[0][1]}×${matrix[1][0]}`);
+                steps.push(`det = ${matrix[0][0]*matrix[1][1]} - ${matrix[0][1]*matrix[1][0]} = ${math.det(math.matrix(matrix))}`);
+            } else if (n === 3) {
+                steps.push(`按第 1 行展开 (Laplace 展开):`);
+                let expansion = '';
+                let calculation = '';
+                let result = 0;
+                
+                for (let j = 0; j < 3; j++) {
+                    const sign = j % 2 === 0 ? 1 : -1;
+                    const minor = getMinor(matrix, 0, j);
+                    const minorDet = minor[0][0] * minor[1][1] - minor[0][1] * minor[1][0];
+                    const term = sign * matrix[0][j] * minorDet;
+                    
+                    expansion += `${sign > 0 && j > 0 ? '+' : ''}(${sign}×${matrix[0][j]}×M₀${j})`;
+                    calculation += `${sign > 0 && j > 0 ? '+' : ''}${term}`;
+                    result += term;
+                    
+                    steps.push(`余子式 M₀${j} = |${minor[0][0]} ${minor[0][1]}; ${minor[1][0]} ${minor[1][1]}| = ${minorDet}`);
+                }
+                
+                steps.push(`det = ${expansion}`);
+                steps.push(`det = ${calculation} = ${result}`);
+            } else {
+                steps.push(`使用递归 Laplace 展开计算 ${n}×${n} 行列式`);
+                steps.push(`按第 1 行展开，计算 ${n} 个 ${n-1}×${n-1} 余子式`);
+                steps.push(`最终结果: ${math.det(math.matrix(matrix))}`);
+            }
+            
+            return steps;
+        }
+        
+        function getMinor(matrix, row, col) {
+            return matrix.filter((_, i) => i !== row)
+                        .map(r => r.filter((_, j) => j !== col));
+        }
+        
+        function demoDetProperty(property) {
+            const demoBox = document.getElementById('det-property-demo');
+            const matrix = [[1, 2], [3, 4]];
+            const originalDet = math.det(math.matrix(matrix));
+            
+            let message = '';
+            
+            switch(property) {
+                case 'swap':
+                    const swapped = [[3, 4], [1, 2]];
+                    const swappedDet = math.det(math.matrix(swapped));
+                    message = `原矩阵: [[1,2],[3,4]], det = ${originalDet}<br>`;
+                    message += `交换两行后: [[3,4],[1,2]], det = ${swappedDet}<br>`;
+                    message += `<strong>结论: 交换两行，行列式变号 (${originalDet} → ${swappedDet})</strong>`;
+                    break;
+                    
+                case 'multiply':
+                    const k = 2;
+                    const multiplied = [[k*1, k*2], [3, 4]];
+                    const multDet = math.det(math.matrix(multiplied));
+                    message = `原矩阵: [[1,2],[3,4]], det = ${originalDet}<br>`;
+                    message += `第1行乘以${k}: [[${k},${2*k}],[3,4]], det = ${multDet}<br>`;
+                    message += `<strong>结论: 某行乘以k，行列式也乘以k (${originalDet}×${k} = ${multDet})</strong>`;
+                    break;
+                    
+                case 'add':
+                    const added = [[1+3, 2+4], [3, 4]];
+                    const addDet = math.det(math.matrix(added));
+                    message = `原矩阵: [[1,2],[3,4]], det = ${originalDet}<br>`;
+                    message += `第1行加上第2行: [[4,6],[3,4]], det = ${addDet}<br>`;
+                    message += `<strong>结论: 倍加变换不改变行列式的值 (${originalDet} = ${addDet})</strong>`;
+                    break;
+            }
+            
+            demoBox.innerHTML = message;
+            demoBox.className = 'result-box success';
+        }
+        
+        // ==========================================
+        // Linear System Solver
+        // ==========================================
+        function updateSystem() {
+            const size = parseInt(document.getElementById('system-size').value);
+            systemMatrixInput = new MatrixInput('system-container', size, size + 1);
+        }
+        
+        function solveSystem(method) {
+            const resultBox = document.getElementById('system-result');
+            const stepsBox = document.getElementById('system-steps');
+            
+            try {
+                const augMatrix = systemMatrixInput.getData();
+                const n = augMatrix.length;
+                const A = augMatrix.map(row => row.slice(0, n));
+                const b = augMatrix.map(row => row[n]);
+                
+                if (method === 'gauss') {
+                    const result = gaussianElimination(augMatrix);
+                    resultBox.innerHTML = '解:<br>' + formatSolution(result.solution, n);
+                    resultBox.className = 'result-box success';
+                    resultBox.style.display = 'block';
+                    
+                    // Show steps
+                    stepsBox.innerHTML = '';
+                    stepsBox.style.display = 'block';
+                    result.steps.forEach((step, idx) => {
+                        const stepDiv = document.createElement('div');
+                        stepDiv.className = 'step';
+                        stepDiv.innerHTML = `
+                            <div class="step-number">${step.step}</div>
+                            <div class="step-content">${step.operation || step.explanation}</div>
+                        `;
+                        stepsBox.appendChild(stepDiv);
+                    });
+                    
+                } else if (method === 'cramer') {
+                    const detA = math.det(math.matrix(A));
+                    if (Math.abs(detA) < 1e-10) {
+                        throw new Error('系数矩阵行列式为0，不能使用克拉默法则');
+                    }
+                    
+                    let solution = [];
+                    for (let i = 0; i < n; i++) {
+                        const Ai = A.map((row, idx) => row.map((val, jdx) => jdx === i ? b[idx] : val));
+                        solution.push(math.det(math.matrix(Ai)) / detA);
+                    }
+                    
+                    resultBox.innerHTML = '克拉默法则求解:<br>' + formatSolution(solution, n);
+                    resultBox.className = 'result-box success';
+                    resultBox.style.display = 'block';
+                }
+                
+            } catch (error) {
+                resultBox.innerHTML = `错误: ${error.message}`;
+                resultBox.className = 'result-box error';
+                resultBox.style.display = 'block';
+            }
+        }
+        
+        function gaussianElimination(augMatrix) {
+            const steps = [];
+            const m = augMatrix.map(row => [...row]);
+            const rows = m.length;
+            const cols = m[0].length;
+            
+            for (let col = 0; col < rows; col++) {
+                // Find pivot
+                let maxRow = col;
+                for (let k = col + 1; k < rows; k++) {
+                    if (Math.abs(m[k][col]) > Math.abs(m[maxRow][col])) {
+                        maxRow = k;
+                    }
+                }
+                
+                if (maxRow !== col) {
+                    [m[col], m[maxRow]] = [m[maxRow], m[col]];
+                    steps.push({
+                        step: `步骤 ${steps.length + 1}: 行交换`,
+                        operation: `R${col+1} ↔ R${maxRow+1}`
+                    });
+                }
+                
+                // Eliminate below
+                for (let row = col + 1; row < rows; row++) {
+                    const factor = m[row][col] / m[col][col];
+                    if (Math.abs(factor) > 1e-10) {
+                        for (let j = col; j < cols; j++) {
+                            m[row][j] -= factor * m[col][j];
+                        }
+                        steps.push({
+                            step: `步骤 ${steps.length + 1}: 消元`,
+                            operation: `R${row+1} = R${row+1} - ${formatNumber(factor)} × R${col+1}`
+                        });
+                    }
+                }
+            }
+            
+            // Back substitution
+            const solution = new Array(rows).fill(0);
+            for (let i = rows - 1; i >= 0; i--) {
+                let sum = m[i][cols - 1];
+                for (let j = i + 1; j < rows; j++) {
+                    sum -= m[i][j] * solution[j];
+                }
+                solution[i] = sum / m[i][i];
+            }
+            
+            return { solution, steps };
+        }
+        
+        function formatSolution(solution, n) {
+            const vars = ['x', 'y', 'z', 'w'];
+            return solution.map((val, idx) => `${vars[idx]} = ${formatNumber(val)}`).join('<br>');
+        }
+        
+        // ==========================================
+        // Vector Visualization
+        // ==========================================
+        function plotVectors() {
+            const v1 = {
+                x: parseFloat(document.getElementById('v1-x').value) || 0,
+                y: parseFloat(document.getElementById('v1-y').value) || 0
+            };
+            const v2 = {
+                x: parseFloat(document.getElementById('v2-x').value) || 0,
+                y: parseFloat(document.getElementById('v2-y').value) || 0
+            };
+            
+            const traces = [
+                {
+                    type: 'scatter',
+                    x: [0, v1.x],
+                    y: [0, v1.y],
+                    mode: 'lines+markers',
+                    name: 'v₁',
+                    line: { color: 'blue', width: 3 },
+                    marker: { size: 8 }
+                },
+                {
+                    type: 'scatter',
+                    x: [0, v2.x],
+                    y: [0, v2.y],
+                    mode: 'lines+markers',
+                    name: 'v₂',
+                    line: { color: 'red', width: 3 },
+                    marker: { size: 8 }
+                }
+            ];
+            
+            Plotly.newPlot('vector-plot', traces, {
+                title: '向量可视化',
+                xaxis: { title: 'x', scaleanchor: 'y', scaleratio: 1 },
+                yaxis: { title: 'y', scaleanchor: 'x', scaleratio: 1 },
+                showlegend: true
+            });
+        }
+        
+        function showLinearCombo() {
+            const v1 = {
+                x: parseFloat(document.getElementById('v1-x').value) || 0,
+                y: parseFloat(document.getElementById('v1-y').value) || 0
+            };
+            const v2 = {
+                x: parseFloat(document.getElementById('v2-x').value) || 0,
+                y: parseFloat(document.getElementById('v2-y').value) || 0
+            };
+            const a = parseFloat(document.getElementById('coeff-a').value);
+            const b = parseFloat(document.getElementById('coeff-b').value);
+            
+            const combo = {
+                x: a * v1.x + b * v2.x,
+                y: a * v1.y + b * v2.y
+            };
+            
+            const traces = [
+                {
+                    type: 'scatter',
+                    x: [0, v1.x],
+                    y: [0, v1.y],
+                    mode: 'lines+markers',
+                    name: 'v₁',
+                    line: { color: 'blue', width: 3 },
+                    marker: { size: 8 }
+                },
+                {
+                    type: 'scatter',
+                    x: [0, v2.x],
+                    y: [0, v2.y],
+                    mode: 'lines+markers',
+                    name: 'v₂',
+                    line: { color: 'red', width: 3 },
+                    marker: { size: 8 }
+                },
+                {
+                    type: 'scatter',
+                    x: [0, combo.x],
+                    y: [0, combo.y],
+                    mode: 'lines+markers',
+                    name: `av₁+bv₂ = ${formatNumber(combo.x)},${formatNumber(combo.y)}`,
+                    line: { color: 'green', width: 3, dash: 'dash' },
+                    marker: { size: 10 }
+                }
+            ];
+            
+            Plotly.newPlot('vector-plot', traces, {
+                title: '线性组合可视化',
+                xaxis: { title: 'x', scaleanchor: 'y', scaleratio: 1 },
+                yaxis: { title: 'y', scaleanchor: 'x', scaleratio: 1 },
+                showlegend: true
+            });
+        }
+        
+        // Update slider values
+        document.getElementById('coeff-a').addEventListener('input', function() {
+            document.getElementById('coeff-a-value').textContent = this.value;
+        });
+        
+        document.getElementById('coeff-b').addEventListener('input', function() {
+            document.getElementById('coeff-b-value').textContent = this.value;
+        });
+        
+        // ==========================================
+        // Eigenvalue Calculator
+        // ==========================================
+        function updateEigenMatrix() {
+            const size = parseInt(document.getElementById('eigen-matrix-size').value);
+            eigenMatrixInput = new MatrixInput('eigen-matrix-container', size, size);
+        }
+        
+        function initEigenMatrix() {
+            if (!eigenMatrixInput) {
+                updateEigenMatrix();
+            }
+        }
+        
+        function calculateEigenvalues() {
+            const resultBox = document.getElementById('eigen-result');
+            
+            try {
+                const A = math.matrix(eigenMatrixInput.getData());
+                if (A.size()[0] !== A.size()[1]) {
+                    throw new Error('特征值只适用于方阵');
+                }
+                const eigen = math.eig(A);
+                
+                let html = '<strong>特征值:</strong><br>';
+                eigen.values.toArray().forEach((val, idx) => {
+                    html += `λ${idx + 1} = ${formatNumber(val)}<br>`;
+                });
+                
+                html += '<br><strong>特征向量:</strong><br>';
+                for (let i = 0; i < eigen.vectors.size()[1]; i++) {
+                    const vec = eigen.vectors.column(i).toArray();
+                    html += `v${i + 1} = [${vec.map(formatNumber).join(', ')}]<br>`;
+                }
+                
+                resultBox.innerHTML = html;
+                resultBox.className = 'result-box success';
+                resultBox.style.display = 'block';
+                
+            } catch (error) {
+                resultBox.innerHTML = `错误: ${error.message}`;
+                resultBox.className = 'result-box error';
+                resultBox.style.display = 'block';
+            }
+        }
+        
+        // ==========================================
+        // Matrix Decomposition
+        // ==========================================
+        function updateDecompMatrix() {
+            const size = parseInt(document.getElementById('decomp-size').value);
+            decompMatrixInput = new MatrixInput('decomp-matrix-container', size, size);
+        }
+        
+        function performDecomposition() {
+            const resultBox = document.getElementById('decomp-result');
+            const stepsBox = document.getElementById('decomp-steps');
+            const method = document.getElementById('decomp-method').value;
+            
+            try {
+                const A = decompMatrixInput.getData();
+                let result = '';
+                let steps = [];
+                
+                switch(method) {
+                    case 'lu':
+                        const luResult = luDecomposition(A);
+                        result = '<strong>L 矩阵:</strong><br>' + formatMatrix(luResult.L);
+                        result += '<br><br><strong>U 矩阵:</strong><br>' + formatMatrix(luResult.U);
+                        steps = luResult.steps;
+                        break;
+                        
+                    case 'qr':
+                        const qrResult = qrDecomposition(A);
+                        result = '<strong>Q 矩阵:</strong><br>' + formatMatrix(qrResult.Q);
+                        result += '<br><br><strong>R 矩阵:</strong><br>' + formatMatrix(qrResult.R);
+                        steps = qrResult.steps;
+                        break;
+                        
+                    case 'cholesky':
+                        const cholResult = choleskyDecomposition(A);
+                        result = '<strong>L 矩阵 (A = LLᵀ):</strong><br>' + formatMatrix(cholResult.L);
+                        steps = cholResult.steps;
+                        break;
+                        
+                    case 'svd':
+                        const svdResult = svdDecomposition(A);
+                        result = '<strong>U 矩阵:</strong><br>' + formatMatrix(svdResult.U);
+                        result += '<br><br><strong>Σ (奇异值):</strong><br>' + svdResult.S.join(', ');
+                        result += '<br><br><strong>Vᵀ 矩阵:</strong><br>' + formatMatrix(svdResult.Vt);
+                        steps = svdResult.steps;
+                        break;
+                }
+                
+                resultBox.innerHTML = result;
+                resultBox.className = 'result-box success';
+                resultBox.style.display = 'block';
+                
+                // Show steps
+                if (steps.length > 0) {
+                    stepsBox.innerHTML = '';
+                    stepsBox.style.display = 'block';
+                    steps.forEach((step, idx) => {
+                        const stepDiv = document.createElement('div');
+                        stepDiv.className = 'step';
+                        stepDiv.innerHTML = `
+                            <div class="step-number">步骤 ${idx + 1}</div>
+                            <div class="step-content">${step}</div>
+                        `;
+                        stepsBox.appendChild(stepDiv);
+                    });
+                }
+                
+            } catch (error) {
+                resultBox.innerHTML = `错误: ${error.message}`;
+                resultBox.className = 'result-box error';
+                resultBox.style.display = 'block';
+            }
+        }
+        
+        function luDecomposition(A) {
+            const n = A.length;
+            const L = Array.from({ length: n }, () => Array(n).fill(0));
+            const U = A.map(row => [...row]);
+            const steps = [];
+            
+            for (let i = 0; i < n; i++) {
+                L[i][i] = 1;
+                
+                for (let j = i + 1; j < n; j++) {
+                    if (Math.abs(U[i][i]) < 1e-10) {
+                        throw new Error('主元为0，需要进行行交换');
+                    }
+                    const factor = U[j][i] / U[i][i];
+                    L[j][i] = factor;
+                    
+                    steps.push(`消去第 ${j + 1} 行第 ${i + 1} 列: R${j + 1} = R${j + 1} - ${formatNumber(factor)} × R${i + 1}`);
+                    
+                    for (let k = i; k < n; k++) {
+                        U[j][k] -= factor * U[i][k];
+                    }
+                }
+            }
+            
+            return { L, U, steps };
+        }
+        
+        function qrDecomposition(A) {
+            // Simplified Gram-Schmidt process
+            const n = A.length;
+            const Q = Array.from({ length: n }, () => Array(n).fill(0));
+            const R = Array.from({ length: n }, () => Array(n).fill(0));
+            const steps = [];
+            
+            const columns = A[0].map((_, i) => A.map(row => row[i]));
+            
+            for (let i = 0; i < n; i++) {
+                let v = [...columns[i]];
+                
+                for (let j = 0; j < i; j++) {
+                    const dotProduct = v.reduce((sum, val, k) => sum + val * Q[k][j], 0);
+                    R[j][i] = dotProduct;
+                    v = v.map((val, k) => val - dotProduct * Q[k][j]);
+                }
+                
+                const norm = Math.sqrt(v.reduce((sum, val) => sum + val * val, 0));
+                R[i][i] = norm;
+                
+                if (norm > 1e-10) {
+                    v.forEach((val, k) => {
+                        Q[k][i] = val / norm;
+                    });
+                }
+                
+                steps.push(`第 ${i + 1} 步: 正交化第 ${i + 1} 列`);
+            }
+            
+            return { Q, R, steps };
+        }
+        
+        function choleskyDecomposition(A) {
+            const n = A.length;
+            const L = Array.from({ length: n }, () => Array(n).fill(0));
+            const steps = [];
+            
+            for (let i = 0; i < n; i++) {
+                for (let j = 0; j <= i; j++) {
+                    let sum = 0;
+                    if (j === i) {
+                        for (let k = 0; k < j; k++) {
+                            sum += L[j][k] * L[j][k];
+                        }
+                        const val = A[j][j] - sum;
+                        if (val < 0) {
+                            throw new Error('矩阵不是正定矩阵，无法进行 Cholesky 分解');
+                        }
+                        L[j][j] = Math.sqrt(val);
+                    } else {
+                        for (let k = 0; k < j; k++) {
+                            sum += L[i][k] * L[j][k];
+                        }
+                        L[i][j] = (A[i][j] - sum) / L[j][j];
+                    }
+                }
+                steps.push(`第 ${i + 1} 步: 计算 L 的第 ${i + 1} 列`);
+            }
+            
+            return { L, steps };
+        }
+        
+        function svdDecomposition(A) {
+            // Use math.js for SVD
+            const matrix = math.matrix(A);
+            const svd = math.svd(matrix);
+            
+            return {
+                U: svd.U.toArray(),
+                S: svd.S.toArray(),
+                Vt: svd.V.toArray(),
+                steps: ['使用数值算法计算 SVD 分解']
+            };
+        }
+        
+        // ==========================================
+        // Example Library
+        // ==========================================
+        function loadExamples() {
+            // Matrix examples
+            const matrixExamples = [
+                {
+                    name: '3阶单位矩阵',
+                    matrix: [[1, 0, 0], [0, 1, 0], [0, 0, 1]],
+                    tags: ['基础', '特殊矩阵'],
+                    description: '单位矩阵 I，满足 IA = AI = A'
+                },
+                {
+                    name: '对称矩阵',
+                    matrix: [[1, 2, 3], [2, 4, 5], [3, 5, 6]],
+                    tags: ['对称', 'A=Aᵀ'],
+                    description: '满足 A = Aᵀ 的矩阵'
+                },
+                {
+                    name: '对角矩阵',
+                    matrix: [[2, 0, 0], [0, 3, 0], [0, 0, 4]],
+                    tags: ['对角', '特殊矩阵'],
+                    description: '非对角线元素全为0'
+                }
+            ];
+            
+            const matrixContainer = document.getElementById('matrix-examples');
+            matrixContainer.innerHTML = '';
+            matrixExamples.forEach(ex => {
+                const card = createExampleCard(ex, 'matrix');
+                matrixContainer.appendChild(card);
+            });
+            
+            // Determinant examples
+            const detExamples = [
+                {
+                    name: '范德蒙德行列式',
+                    matrix: [[1, 1, 1], [1, 2, 3], [1, 4, 9]],
+                    tags: ['特殊行列式', '重要公式'],
+                    description: 'det = (x₂-x₁)(x₃-x₁)(x₃-x₂)'
+                },
+                {
+                    name: '三角行列式',
+                    matrix: [[2, 3, 4], [0, 5, 6], [0, 0, 7]],
+                    tags: ['上三角', '简便计算'],
+                    description: '对角线元素之积: 2×5×7=70'
+                }
+            ];
+            
+            const detContainer = document.getElementById('determinant-examples');
+            detContainer.innerHTML = '';
+            detExamples.forEach(ex => {
+                const card = createExampleCard(ex, 'determinant');
+                detContainer.appendChild(card);
+            });
+            
+            // Problem examples
+            const problemExamples = [
+                {
+                    name: '求解线性方程组',
+                    matrix: [[2, 1, -1, 8], [-3, -1, 2, -11], [-2, 1, 2, -3]],
+                    tags: ['方程组', '高斯消元'],
+                    description: '经典三元一次方程组'
+                },
+                {
+                    name: '求逆矩阵',
+                    matrix: [[1, 2], [3, 4]],
+                    tags: ['逆矩阵', '2×2'],
+                    description: '计算 2×2 矩阵的逆'
+                }
+            ];
+            
+            const problemContainer = document.getElementById('problem-examples');
+            problemContainer.innerHTML = '';
+            problemExamples.forEach(ex => {
+                const card = createExampleCard(ex, 'problem');
+                problemContainer.appendChild(card);
+            });
+        }
+        
+        function createExampleCard(example, type) {
+            const card = document.createElement('div');
+            card.className = 'example-card';
+            card.innerHTML = `
+                <h4>${example.name}</h4>
+                <p>${example.description}</p>
+                <div class="example-tags">
+                    ${example.tags.map(tag => `<span class="tag">${tag}</span>`).join('')}
+                </div>
+            `;
+            
+            card.addEventListener('click', () => {
+                loadExampleToCalculator(example, type);
+            });
+            
+            return card;
+        }
+        
+        function loadExampleToCalculator(example, type) {
+            // Switch to appropriate tab and load example
+            if (type === 'matrix' || type === 'problem') {
+                document.querySelector('[data-tab="matrix-calc"]').click();
+                setTimeout(() => {
+                    const rows = example.matrix.length;
+                    const cols = example.matrix[0].length;
+                    document.getElementById('matrix-a-rows').value = rows;
+                    document.getElementById('matrix-a-cols').value = cols;
+                    updateMatrixA();
+                    matrixAInput.setData(example.matrix);
+                }, 100);
+            } else if (type === 'determinant') {
+                document.querySelector('[data-tab="determinant"]').click();
+                setTimeout(() => {
+                    const size = example.matrix.length;
+                    document.getElementById('det-matrix-size').value = size;
+                    updateDetMatrix();
+                    detMatrixInput.setData(example.matrix);
+                }, 100);
+            }
+        }
+        
+        // ==========================================
+        // Utility Functions
+        // ==========================================
+        function formatNumber(num) {
+            if (Math.abs(num) < 1e-10) return '0';
+            if (Number.isInteger(num)) return num.toString();
+            return num.toFixed(4).replace(/\.?0+$/, '');
+        }
+        
+        function formatMatrix(matrix) {
+            return matrix.map(row => 
+                '[' + row.map(formatNumber).join(', ') + ']'
+            ).join('<br>');
+        }
+        
+        function matrixToLatex(matrix) {
+            const rows = matrix.map(row => 
+                row.map(formatNumber).join(' & ')
+            ).join(' \\\\ ');
+            return `\\begin{pmatrix} ${rows} \\end{pmatrix}`;
+        }
+        
+        function generateInvSteps(matrix) {
+            const steps = [];
+            steps.push('使用高斯-若尔当消元法求逆矩阵');
+            steps.push('构造增广矩阵 [A | I]');
+            steps.push('通过行变换将左侧化为单位矩阵');
+            steps.push('右侧即为 A⁻¹');
+            return steps;
+        }
+        
+        // ==========================================
+        // Practice Problem System
+        // ==========================================
+        let currentProblem = null;
+        let practiceStats = {
+            completed: 0,
+            correct: 0
+        };
+        
+        function generatePractice() {
+            const type = document.getElementById('practice-type').value;
+            const difficulty = document.getElementById('practice-difficulty').value;
+            
+            let size = 2;
+            if (difficulty === 'medium') size = 3;
+            if (difficulty === 'hard') size = 4;
+            
+            let problem = {};
+            
+            switch(type) {
+                case 'det':
+                    problem = generateDetProblem(size);
+                    break;
+                case 'matrix-op':
+                    problem = generateMatrixOpProblem(size);
+                    break;
+                case 'inverse':
+                    problem = generateInverseProblem(size);
+                    break;
+                case 'system':
+                    problem = generateSystemProblem(size);
+                    break;
+                case 'eigen':
+                    problem = generateEigenProblem(2); // Eigenvalues are complex for larger matrices
+                    break;
+            }
+            
+            currentProblem = problem;
+            
+            const problemBox = document.getElementById('practice-problem');
+            problemBox.innerHTML = `
+                <strong>题目:</strong><br>
+                ${problem.question}<br><br>
+                <div style="font-family: monospace; background: #f5f5f5; padding: 10px; border-radius: 4px;">
+                    ${problem.matrixDisplay}
+                </div>
+            `;
+            problemBox.className = 'result-box success';
+            problemBox.style.display = 'block';
+            
+            document.getElementById('practice-answer-section').style.display = 'block';
+            document.getElementById('practice-result').style.display = 'none';
+            document.getElementById('practice-solution').style.display = 'none';
+            document.getElementById('practice-answer').value = '';
+        }
+        
+        function generateDetProblem(size) {
+            const matrix = Array.from({length: size}, () => 
+                Array.from({length: size}, () => Math.floor(Math.random() * 10) - 5)
+            );
+            
+            const detValue = math.det(math.matrix(matrix));
+            
+            return {
+                type: 'det',
+                question: `计算以下 ${size}×${size} 矩阵的行列式:`,
+                matrix: matrix,
+                matrixDisplay: formatMatrix(matrix),
+                answer: formatNumber(detValue),
+                solution: [`行列式的值为: ${formatNumber(detValue)}`]
+            };
+        }
+        
+        function generateMatrixOpProblem(size) {
+            const A = Array.from({length: size}, () => 
+                Array.from({length: size}, () => Math.floor(Math.random() * 10) - 5)
+            );
+            const B = Array.from({length: size}, () => 
+                Array.from({length: size}, () => Math.floor(Math.random() * 10) - 5)
+            );
+            
+            const ops = ['add', 'subtract', 'multiply'];
+            const op = ops[Math.floor(Math.random() * ops.length)];
+            
+            let result, opSymbol;
+            switch(op) {
+                case 'add':
+                    result = math.add(math.matrix(A), math.matrix(B)).toArray();
+                    opSymbol = '+';
+                    break;
+                case 'subtract':
+                    result = math.subtract(math.matrix(A), math.matrix(B)).toArray();
+                    opSymbol = '-';
+                    break;
+                case 'multiply':
+                    result = math.multiply(math.matrix(A), math.matrix(B)).toArray();
+                    opSymbol = '×';
+                    break;
+            }
+            
+            return {
+                type: 'matrix-op',
+                question: `计算矩阵 A ${opSymbol} B:`,
+                matrix: {A, B},
+                matrixDisplay: `A = ${formatMatrix(A)}<br><br>B = ${formatMatrix(B)}`,
+                answer: formatMatrix(result),
+                operation: op,
+                solution: [`A ${opSymbol} B =<br>${formatMatrix(result)}`]
+            };
+        }
+        
+        function generateInverseProblem(size) {
+            // Generate a matrix with non-zero determinant
+            let matrix;
+            do {
+                matrix = Array.from({length: size}, () => 
+                    Array.from({length: size}, () => Math.floor(Math.random() * 10) - 5)
+                );
+            } while (Math.abs(math.det(math.matrix(matrix))) < 0.1);
+            
+            const inv = math.inv(math.matrix(matrix)).toArray();
+            
+            return {
+                type: 'inverse',
+                question: `求以下 ${size}×${size} 矩阵的逆矩阵:`,
+                matrix: matrix,
+                matrixDisplay: formatMatrix(matrix),
+                answer: formatMatrix(inv),
+                solution: [`逆矩阵为:<br>${formatMatrix(inv)}`]
+            };
+        }
+        
+        function generateSystemProblem(size) {
+            const A = Array.from({length: size}, () => 
+                Array.from({length: size}, () => Math.floor(Math.random() * 10) - 5)
+            );
+            const solution = Array.from({length: size}, () => Math.floor(Math.random() * 10) - 5);
+            
+            // Calculate b = Ax
+            const b = math.multiply(math.matrix(A), math.matrix(solution)).toArray();
+            
+            const augMatrix = A.map((row, i) => [...row, b[i]]);
+            
+            return {
+                type: 'system',
+                question: `求解线性方程组 Ax = b:`,
+                matrix: augMatrix,
+                matrixDisplay: formatMatrix(augMatrix),
+                answer: solution.map((v, i) => `x${i+1} = ${v}`).join(', '),
+                solution: [`解为: ${solution.map((v, i) => `x${i+1} = ${v}`).join(', ')}`]
+            };
+        }
+        
+        function generateEigenProblem(size) {
+            const matrix = Array.from({length: size}, () => 
+                Array.from({length: size}, () => Math.floor(Math.random() * 6) - 2)
+            );
+            
+            try {
+                const eigen = math.eig(math.matrix(matrix));
+                const eigenvalues = eigen.values.toArray();
+                
+                return {
+                    type: 'eigen',
+                    question: `求以下矩阵的特征值:`,
+                    matrix: matrix,
+                    matrixDisplay: formatMatrix(matrix),
+                    answer: eigenvalues.map(formatNumber).join(', '),
+                    solution: [`特征值为: ${eigenvalues.map(formatNumber).join(', ')}`]
+                };
+            } catch (e) {
+                // Fallback to a simple matrix
+                return generateEigenProblem(size);
+            }
+        }
+        
+        function checkAnswer() {
+            if (!currentProblem) {
+                alert('请先生成题目!');
+                return;
+            }
+            
+            const userAnswer = document.getElementById('practice-answer').value.trim();
+            const resultBox = document.getElementById('practice-result');
+            
+            // Simple string comparison (can be improved)
+            const isCorrect = userAnswer.toLowerCase().replace(/\s/g, '') === 
+                             currentProblem.answer.toLowerCase().replace(/\s/g, '');
+            
+            practiceStats.completed++;
+            if (isCorrect) practiceStats.correct++;
+            
+            resultBox.innerHTML = isCorrect ? 
+                '<strong>✓ 正确!</strong> 答案正确。' : 
+                `<strong>✗ 错误</strong><br>你的答案: ${userAnswer}<br>正确答案: ${currentProblem.answer}`;
+            resultBox.className = isCorrect ? 'result-box success' : 'result-box error';
+            resultBox.style.display = 'block';
+            
+            // Update stats
+            document.getElementById('completed-count').textContent = practiceStats.completed;
+            const accuracy = practiceStats.completed > 0 ? 
+                Math.round((practiceStats.correct / practiceStats.completed) * 100) : 0;
+            document.getElementById('accuracy-rate').textContent = accuracy + '%';
+        }
+        
+        function showPracticeSolution() {
+            if (!currentProblem) {
+                alert('请先生成题目!');
+                return;
+            }
+            
+            const solutionBox = document.getElementById('practice-solution');
+            solutionBox.innerHTML = '';
+            solutionBox.style.display = 'block';
+            
+            currentProblem.solution.forEach((step, idx) => {
+                const stepDiv = document.createElement('div');
+                stepDiv.className = 'step';
+                stepDiv.innerHTML = `
+                    <div class="step-number">步骤 ${idx + 1}</div>
+                    <div class="step-content">${step}</div>
+                `;
+                solutionBox.appendChild(stepDiv);
+            });
+        }
+        
+        // ==========================================
+        // LaTeX Export
+        // ==========================================
+        let latexContent = '';
+        
+        function generateLatex() {
+            let latex = '\\documentclass{article}\n';
+            latex += '\\usepackage{amsmath}\n';
+            latex += '\\usepackage{amssymb}\n';
+            latex += '\\usepackage[utf8]{inputenc}\n';
+            latex += '\\usepackage[T1]{fontenc}\n';
+            latex += '\\title{线性代数计算过程}\n';
+            latex += '\\author{}\n';
+            latex += '\\date{\\today}\n\n';
+            latex += '\\begin{document}\n\n';
+            latex += '\\maketitle\n\n';
+            
+            // Export matrix calculations
+            if (document.getElementById('export-matrix').checked && matrixAInput) {
+                latex += '\\section*{矩阵计算器}\n\n';
+                latex += '矩阵 A:\n\\[\n';
+                latex += matrixToLatex(matrixAInput.getData()) + '\n\\]\n\n';
+                
+                const operation = document.getElementById('matrix-operation').value;
+                latex += `运算: ${operation}\n\n`;
+            }
+            
+            // Export determinant
+            if (document.getElementById('export-det').checked && detMatrixInput) {
+                latex += '\\section*{行列式计算}\n\n';
+                latex += '矩阵:\n\\[\n';
+                latex += matrixToLatex(detMatrixInput.getData()) + '\n\\]\n\n';
+                latex += `行列式的值: $${formatNumber(math.det(math.matrix(detMatrixInput.getData())))}$\n\n`;
+            }
+            
+            // Export linear system
+            if (document.getElementById('export-system').checked && systemMatrixInput) {
+                latex += '\\section*{线性方程组求解}\n\n';
+                latex += '增广矩阵:\n\\[\n';
+                latex += matrixToLatex(systemMatrixInput.getData()) + '\n\\]\n\n';
+            }
+            
+            // Export eigenvalues
+            if (document.getElementById('export-eigen').checked && eigenMatrixInput) {
+                latex += '\\section*{特征值与特征向量}\n\n';
+                latex += '矩阵 A:\n\\[\n';
+                latex += matrixToLatex(eigenMatrixInput.getData()) + '\n\\]\n\n';
+                
+                try {
+                    const eigen = math.eig(math.matrix(eigenMatrixInput.getData()));
+                    latex += '特征值:\n\\[\n';
+                    eigen.values.toArray().forEach((val, idx) => {
+                        latex += `\\lambda_${idx+1} = ${formatNumber(val)} \\\\\n`;
+                    });
+                    latex += '\\]\n\n';
+                } catch (e) {
+                    latex += '无法计算特征值。\n\n';
+                }
+            }
+            
+            // Export decomposition
+            if (document.getElementById('export-decomp').checked && decompMatrixInput) {
+                latex += '\\section*{矩阵分解}\n\n';
+                latex += '原矩阵:\n\\[\n';
+                latex += matrixToLatex(decompMatrixInput.getData()) + '\n\\]\n\n';
+            }
+            
+            latex += '\\end{document}';
+            
+            latexContent = latex;
+            
+            const outputBox = document.getElementById('latex-output');
+            document.getElementById('latex-code').textContent = latex;
+            outputBox.className = 'result-box success';
+            outputBox.style.display = 'block';
+        }
+        
+        function downloadLatex() {
+            if (!latexContent) {
+                alert('请先生成 LaTeX 内容!');
+                return;
+            }
+            
+            const blob = new Blob([latexContent], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'linear-algebra.tex';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+        
+        function copyLatex() {
+            if (!latexContent) {
+                alert('请先生成 LaTeX 内容!');
+                return;
+            }
+            
+            navigator.clipboard.writeText(latexContent).then(() => {
+                alert('LaTeX 代码已复制到剪贴板!');
+            }).catch(err => {
+                console.error('复制失败:', err);
+                alert('复制失败，请手动选择并复制。');
+            });
+        }
+        
+        // ==========================================
+        // Initialize Application
+        // ==========================================
+        window.addEventListener('DOMContentLoaded', () => {
+            updateMatrixA();
+            console.log('线性代数学习软件已加载');
+        });
+    </script>
+</body>
+</html>

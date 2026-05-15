@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>线性代数计算器 - 功能测试</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.8.0/math.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-section {
+            background: white;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .test-section h2 {
+            color: #2196F3;
+            margin-bottom: 15px;
+        }
+        .test-result {
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 4px;
+        }
+        .pass {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+        .fail {
+            background: #ffebee;
+            color: #c62828;
+        }
+        button {
+            background: #2196F3;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        button:hover {
+            background: #1976D2;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧪 线性代数计算器 - 功能测试</h1>
+    
+    <div class="test-section">
+        <h2>测试 1: 矩阵基本运算</h2>
+        <button onclick="testBasicOperations()">运行测试</button>
+        <div id="test1-results"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>测试 2: 行列式计算</h2>
+        <button onclick="testDeterminants()">运行测试</button>
+        <div id="test2-results"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>测试 3: 逆矩阵</h2>
+        <button onclick="testInverse()">运行测试</button>
+        <div id="test3-results"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>测试 4: 特征值</h2>
+        <button onclick="testEigenvalues()">运行测试</button>
+        <div id="test4-results"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>测试 5: 高斯消元</h2>
+        <button onclick="testGaussianElimination()">运行测试</button>
+        <div id="test5-results"></div>
+    </div>
+
+    <script>
+        function addResult(containerId, testName, passed, message) {
+            const container = document.getElementById(containerId);
+            const div = document.createElement('div');
+            div.className = `test-result ${passed ? 'pass' : 'fail'}`;
+            div.innerHTML = `${passed ? '✅' : '❌'} ${testName}: ${message}`;
+            container.appendChild(div);
+        }
+        
+        function testBasicOperations() {
+            const container = 'test1-results';
+            document.getElementById(container).innerHTML = '';
+            
+            try {
+                // Test matrix addition
+                const A = math.matrix([[1, 2], [3, 4]]);
+                const B = math.matrix([[5, 6], [7, 8]]);
+                const C = math.add(A, B);
+                const expected = [[6, 8], [10, 12]];
+                const passed = JSON.stringify(C.toArray()) === JSON.stringify(expected);
+                addResult(container, '矩阵加法', passed, 
+                    passed ? '正确' : `期望 ${JSON.stringify(expected)}, 得到 ${JSON.stringify(C.toArray())}`);
+                
+                // Test matrix multiplication
+                const D = math.multiply(A, B);
+                const expectedMul = [[19, 22], [43, 50]];
+                const passedMul = JSON.stringify(D.toArray()) === JSON.stringify(expectedMul);
+                addResult(container, '矩阵乘法', passedMul,
+                    passedMul ? '正确' : `期望 ${JSON.stringify(expectedMul)}, 得到 ${JSON.stringify(D.toArray())}`);
+                
+                // Test transpose
+                const AT = math.transpose(A);
+                const expectedT = [[1, 3], [2, 4]];
+                const passedT = JSON.stringify(AT.toArray()) === JSON.stringify(expectedT);
+                addResult(container, '矩阵转置', passedT,
+                    passedT ? '正确' : `期望 ${JSON.stringify(expectedT)}, 得到 ${JSON.stringify(AT.toArray())}`);
+                
+            } catch (error) {
+                addResult(container, '基本运算', false, error.message);
+            }
+        }
+        
+        function testDeterminants() {
+            const container = 'test2-results';
+            document.getElementById(container).innerHTML = '';
+            
+            try {
+                // 2x2 determinant
+                const A2 = math.matrix([[1, 2], [3, 4]]);
+                const det2 = math.det(A2);
+                const passed2 = Math.abs(det2 - (-2)) < 1e-10;
+                addResult(container, '2×2 行列式', passed2,
+                    passed2 ? `det = ${det2} ✓` : `期望 -2, 得到 ${det2}`);
+                
+                // 3x3 determinant
+                const A3 = math.matrix([[1, 2, 3], [4, 5, 6], [7, 8, 9]]);
+                const det3 = math.det(A3);
+                const passed3 = Math.abs(det3 - 0) < 1e-10;
+                addResult(container, '3×3 行列式（奇异矩阵）', passed3,
+                    passed3 ? `det = ${det3} ✓` : `期望 0, 得到 ${det3}`);
+                
+                // Identity matrix determinant
+                const I = math.identity(3);
+                const detI = math.det(I);
+                const passedI = Math.abs(detI - 1) < 1e-10;
+                addResult(container, '单位矩阵行列式', passedI,
+                    passedI ? `det = ${detI} ✓` : `期望 1, 得到 ${detI}`);
+                
+            } catch (error) {
+                addResult(container, '行列式计算', false, error.message);
+            }
+        }
+        
+        function testInverse() {
+            const container = 'test3-results';
+            document.getElementById(container).innerHTML = '';
+            
+            try {
+                const A = math.matrix([[1, 2], [3, 4]]);
+                const invA = math.inv(A);
+                
+                // Verify A * A^(-1) = I
+                const product = math.multiply(A, invA);
+                const identity = math.identity(2).toArray();
+                const productArray = product.toArray();
+                
+                let passed = true;
+                for (let i = 0; i < 2; i++) {
+                    for (let j = 0; j < 2; j++) {
+                        if (Math.abs(productArray[i][j] - identity[i][j]) > 1e-10) {
+                            passed = false;
+                        }
+                    }
+                }
+                
+                addResult(container, '逆矩阵验证 (A×A⁻¹=I)', passed,
+                    passed ? '正确' : '乘积不等于单位矩阵');
+                
+            } catch (error) {
+                addResult(container, '逆矩阵计算', false, error.message);
+            }
+        }
+        
+        function testEigenvalues() {
+            const container = 'test4-results';
+            document.getElementById(container).innerHTML = '';
+            
+            try {
+                const A = math.matrix([[4, 1], [2, 3]]);
+                const eigen = math.eig(A);
+                
+                // Expected eigenvalues: 5 and 2
+                const values = eigen.values.toArray();
+                const sorted = values.sort((a, b) => a - b);
+                
+                const passed = Math.abs(sorted[0] - 2) < 1e-10 && 
+                              Math.abs(sorted[1] - 5) < 1e-10;
+                
+                addResult(container, '特征值计算', passed,
+                    passed ? `λ₁=2, λ₂=5 ✓` : `期望 [2, 5], 得到 [${sorted.join(', ')}]`);
+                
+            } catch (error) {
+                addResult(container, '特征值计算', false, error.message);
+            }
+        }
+        
+        function testGaussianElimination() {
+            const container = 'test5-results';
+            document.getElementById(container).innerHTML = '';
+            
+            try {
+                // Test system: 2x + y = 5, x - y = 1
+                // Solution: x = 2, y = 1
+                const augMatrix = [
+                    [2, 1, 5],
+                    [1, -1, 1]
+                ];
+                
+                // Simple Gaussian elimination
+                const m = augMatrix.map(row => [...row]);
+                
+                // Eliminate
+                const factor = m[1][0] / m[0][0];
+                for (let j = 0; j < 3; j++) {
+                    m[1][j] -= factor * m[0][j];
+                }
+                
+                // Back substitution
+                const y = m[1][2] / m[1][1];
+                const x = (m[0][2] - m[0][1] * y) / m[0][0];
+                
+                const passed = Math.abs(x - 2) < 1e-10 && Math.abs(y - 1) < 1e-10;
+                
+                addResult(container, '高斯消元求解', passed,
+                    passed ? `x=2, y=1 ✓` : `期望 x=2,y=1, 得到 x=${x},y=${y}`);
+                
+            } catch (error) {
+                addResult(container, '高斯消元', false, error.message);
+            }
+        }
+        
+        // Auto-run all tests on load
+        window.addEventListener('DOMContentLoaded', () => {
+            console.log('开始自动测试...');
+            setTimeout(() => {
+                testBasicOperations();
+                testDeterminants();
+                testInverse();
+                testEigenvalues();
+                testGaussianElimination();
+                console.log('测试完成！');
+            }, 1000);
+        });
+    </script>
+</body>
+</html>
